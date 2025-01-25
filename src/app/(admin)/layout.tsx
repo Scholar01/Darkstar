@@ -1,6 +1,12 @@
 import { AdminSidebar } from '@/components/admin_sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { Metadata } from 'next';
 import { cookies } from 'next/headers';
+
+export const metadata: Metadata = {
+  title: '后台管理',
+  description: '后台管理',
+};
 
 export default async function AdminLayout({
   children,
@@ -13,9 +19,7 @@ export default async function AdminLayout({
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AdminSidebar />
-      <main>
-        {children}
-      </main>
+      {children}
     </SidebarProvider>
   );
 }

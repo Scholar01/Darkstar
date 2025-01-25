@@ -32,7 +32,7 @@ const items = [
   {
     title: '后端管理',
     icon: TbBackground,
-    href: '/admin/ai',
+    href: '/admin/client',
   },
   {
     title: '任务管理',

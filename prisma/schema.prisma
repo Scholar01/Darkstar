@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum platform {
+  comfyui
+  webui
+}
+
+enum env_action {
+  download // 下载
+  git // git clone
+  shell // 执行shell
+}
+
+model env {
+  id         Int      @id @default(autoincrement())
+  name       String // 环境名称
+  desc       String? // 环境描述
+  platform   platform // 平台
+  is_active  Boolean  @default(false) // 是否激活
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  env_variables env_variable[] @relation("EnvVariable")
+}
+
+model env_variable {
+  id     Int        @id @default(autoincrement())
+  order  Int        @default(0) // 执行顺序
+  name   String // 变量名称
+  action env_action // 变量动作
+  value  String // 变量值
+  value1 String? // 变量值1
+  value2 String? // 变量值2
+  value3 String? // 变量值3
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  env_id Int // 环境id
+  env    env @relation("EnvVariable", fields: [env_id], references: [id], onDelete: Cascade) // 环境, 级联删除
+}
