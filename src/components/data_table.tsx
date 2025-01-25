@@ -32,12 +32,23 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   initialSorting?: SortingState;
+  onEdit?: (row: TData) => void;
+  onDelete?: (row: TData) => void;
+}
+
+declare module '@tanstack/table-core' {
+  interface TableMeta<TData> {
+    onEdit?: (row: TData) => void;
+    onDelete?: (row: TData) => void;
+  }
 }
 
 function DataTable<TData, TValue>({
   columns,
   data,
   initialSorting = [],
+  onEdit,
+  onDelete,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>(initialSorting);
 
@@ -50,10 +61,14 @@ function DataTable<TData, TValue>({
       sorting,
     },
     onSortingChange: (newSorting) => setSorting(newSorting),
+    meta: {
+      onEdit,
+      onDelete,
+    },
   });
 
   return (
-    <div className="w-full rounded-md border">
+    <div className='w-full rounded-md border'>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -99,7 +114,7 @@ function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell colSpan={columns.length} className='h-24 text-center'>
                 No results.
               </TableCell>
             </TableRow>
@@ -132,8 +147,8 @@ function DataTableColumnSortHeader<TData, TValue>({
   return (
     <Button
       className={cn('font-medium', className)}
-      variant="ghost"
-      size="sm"
+      variant='ghost'
+      size='sm'
       onClick={() => {
         const isDesc = column.getIsSorted() === 'asc';
         column.toggleSorting(column.getIsSorted() === 'asc');
@@ -176,15 +191,15 @@ function DataTableColumnFilterHeader<TData, TValue>({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
-            size="sm"
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
+            variant='ghost'
+            size='sm'
+            className='-ml-3 h-8 data-[state=open]:bg-accent'
           >
             <span>{title}</span>
             <ChevronsUpDown />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
+        <DropdownMenuContent align='start'>
           {items.map((item) => (
             <DropdownMenuItem
               key={item.value}

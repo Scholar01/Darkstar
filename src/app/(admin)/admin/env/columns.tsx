@@ -2,6 +2,9 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { env } from '@prisma/client';
+import { z } from 'zod';
+import { env_variableSchema } from '@/lib/shemas';
+import EnvVariableForm from '@/app/(admin)/admin/env/env_variable_form';
 
 export const columns: ColumnDef<env>[] = [
   {
@@ -52,5 +55,50 @@ export const columns: ColumnDef<env>[] = [
         </button>
       </div>
     ),
+  },
+];
+
+export const env_variable_columns: ColumnDef<
+  z.infer<typeof env_variableSchema>
+>[] = [
+  {
+    accessorKey: 'name',
+    header: '名称',
+  },
+  {
+    accessorKey: 'action',
+    header: '动作',
+    cell: ({ row }) => {
+      return row.original.action === 'download'
+        ? '下载'
+        : row.original.action === 'git'
+          ? 'git克隆'
+          : '执行命令';
+    },
+  },
+  {
+    id: 'actions',
+    header: '操作',
+    cell: ({ row, table }) => {
+      return (
+        <div className='flex items-center gap-2'>
+          <EnvVariableForm
+            defaultValues={row.original}
+            onSuccess={(data) => {
+              table.options.meta?.onEdit?.(data);
+            }}
+          >
+            <button type='button'>编辑</button>
+          </EnvVariableForm>
+          <button
+            type='button'
+            className='text-red-500 hover:text-red-700'
+            onClick={() => table.options.meta?.onDelete?.(row.original)}
+          >
+            删除
+          </button>
+        </div>
+      );
+    },
   },
 ];

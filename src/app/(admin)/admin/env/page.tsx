@@ -1,88 +1,70 @@
 import { columns } from '@/app/(admin)/admin/env/columns';
 import { SideBarBreadcrumb } from '@/components/admin_sidebar';
 import { DataTable } from '@/components/data_table';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FaCirclePlus } from 'react-icons/fa6';
 import { cn } from '@/lib/utils';
 import { type env } from '@prisma/client';
-
-async function getData(): Promise<env[]> {
-  // Fetch data from your API here.
-  return [
-    {
-      id: 1,
-      name: 'test',
-      desc: 'test',
-      platform: 'webui',
-      is_active: true,
-      created_at: new Date(),
-      updated_at: new Date(),
-    },
-    {
-      id: 2,
-      name: 'test2',
-      desc: 'test2,这是一个超长的描述，用来测试表格的显示效果,啊啊是发烧发烧发烧发烧发烧发烧发烧',
-      platform: 'comfyui',
-      is_active: true,
-      created_at: new Date(),
-      updated_at: new Date(),
-    },
-    {
-      id: 3,
-      name: 'test3',
-      desc: 'test3',
-      platform: 'webui',
-      is_active: false,
-      created_at: new Date(),
-      updated_at: new Date(),
-    },
-    {
-      id: 4,
-      name: 'test4',
-      desc: 'test4',
-      platform: 'comfyui',
-      is_active: false,
-      created_at: new Date(),
-      updated_at: new Date(),
-    },
-  ];
-}
+import PagePagination from '@/components/page_pagination';
+import prisma from '@/lib/prisma';
+import EnvForm from '@/app/(admin)/admin/env/env_form';
 
 export default async function EnvPage() {
   //查找已经激活的环境,并区分sd和comfy
-  const envs = await getData();
+  const envs = await prisma.env.findMany();
+  const total = await prisma.env.count();
 
-  const active_sd = envs.find((env) => env.platform === 'webui');
-  const active_comfy = envs.find((env) => env.platform === 'comfyui');
+  const active_sd = envs.find(
+    (env) => env.platform === 'webui' && env.is_active,
+  );
+  const active_comfy = envs.find(
+    (env) => env.platform === 'comfyui' && env.is_active,
+  );
 
   return (
-    <main className='w-full py-2'>
-      <SideBarBreadcrumb page={{ name: '环境管理' }} />
-      <div className='mt-4 p-2'>
-        {/* 查看已激活的环境 */}
+    <main className='w-full py-4'>
+      <SideBarBreadcrumb page={{ name: '环境管理' }} className='mb-4' />
 
-        <h2 className='mb-2 text-2xl font-medium text-muted-foreground'>
-          已激活环境
-        </h2>
-        <div className='grid grid-cols-1 gap-2 md:grid-cols-2'>
-          <ActiveEnvCard env={active_sd} title='Stable Diffusion' />
-          <ActiveEnvCard env={active_comfy} title='ComfyUI' />
-        </div>
+      <div className='container mx-auto px-4'>
+        {/* 已激活环境区域 */}
+        <section className='mb-8'>
+          <h2 className='mb-4 text-2xl font-semibold text-muted-foreground'>
+            已激活环境
+          </h2>
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+            <ActiveEnvCard env={active_sd} title='Stable Diffusion' />
+            <ActiveEnvCard env={active_comfy} title='ComfyUI' />
+          </div>
+        </section>
 
-        {/* 环境列表 */}
-        <h2 className='my-4 text-2xl font-medium text-muted-foreground'>
-          环境列表
-        </h2>
-        <DataTable columns={columns} data={envs} />
+        {/* 环境列表区域 */}
+        <section>
+          <div className='mb-4 flex items-center justify-between'>
+            <h2 className='text-2xl font-semibold text-muted-foreground'>
+              环境列表
+            </h2>
+            <EnvForm
+              title='创建新环境'
+              description='创建新环境,可用于自动同步后端'
+            >
+              <Button
+                variant='outline'
+                size='icon'
+                className='hover:bg-primary/10 [&_svg]:size-4'
+                aria-label='添加环境'
+              >
+                <FaCirclePlus />
+              </Button>
+            </EnvForm>
+          </div>
+          <DataTable columns={columns} data={envs} />
+          <PagePagination page={1} size={10} total={total} className='mt-6' />
+        </section>
       </div>
     </main>
   );
 }
-
 const ActiveEnvCard = ({ env, title }: { env?: env; title: string }) => {
   return (
     <Card>
@@ -114,3 +96,4 @@ const ActiveEnvCard = ({ env, title }: { env?: env; title: string }) => {
     </Card>
   );
 };
+
