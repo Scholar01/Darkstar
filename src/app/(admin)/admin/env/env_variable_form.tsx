@@ -69,7 +69,7 @@ import { useForm } from 'react-hook-form';
                   <FormItem>
                     <FormLabel>名称</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} autoFocus />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -33,15 +33,19 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/data_table';
 import { env_variable_columns } from '@/app/(admin)/admin/env/columns';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { FaCirclePlus } from 'react-icons/fa6';
 import EnvVariableForm from '@/app/(admin)/admin/env/env_variable_form';
+import { createEnv } from '@/app/(admin)/admin/env/actions';
+import { Loader2 } from 'lucide-react';
+import { setFormErrorsFromActionError } from '@/lib/utils';
 const EnvForm: React.FC<{
   children: React.ReactNode;
   title?: string;
   description?: string;
 }> = ({ children, title, description }) => {
   const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const form = useForm<z.infer<typeof envSchema>>({
     resolver: zodResolver(envSchema),
     defaultValues: {
@@ -54,7 +58,16 @@ const EnvForm: React.FC<{
   });
 
   const onSubmit = (data: z.infer<typeof envSchema>) => {
-    console.log(data);
+    startTransition(async () => {
+      const res = await createEnv(data);
+      if (res.errors) {
+        setFormErrorsFromActionError(form.setError, res.errors);
+        return;
+      }
+
+      form.reset();
+      setOpen(false);
+    });
   };
 
   return (
@@ -79,7 +92,7 @@ const EnvForm: React.FC<{
                     环境名称 <span className='text-xs text-red-500'>*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder='请输入环境名称' {...field} />
+                    <Input placeholder='请输入环境名称' autoFocus {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -200,8 +213,15 @@ const EnvForm: React.FC<{
                   取消
                 </Button>
               </SheetClose>
-              <Button type='submit' size='lg'>
-                提交
+              <Button type='submit' size='lg' disabled={isPending}>
+                {isPending ? (
+                  <>
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                    提交中
+                  </>
+                ) : (
+                  '提交'
+                )}
               </Button>
             </div>
           </form>
