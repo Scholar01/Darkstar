@@ -12,7 +12,11 @@ import EnvForm from '@/app/(admin)/admin/env/env_form';
 
 export default async function EnvPage() {
   //查找已经激活的环境,并区分sd和comfy
-  const envs = await prisma.env.findMany();
+  const envs = await prisma.env.findMany({
+    include: {
+      env_variables: true,
+    },
+  });
   const total = await prisma.env.count();
 
   const active_sd = envs.find(

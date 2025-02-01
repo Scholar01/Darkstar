@@ -5,6 +5,8 @@ import { env } from '@prisma/client';
 import { z } from 'zod';
 import { env_variableSchema } from '@/lib/shemas';
 import EnvVariableForm from '@/app/(admin)/admin/env/env_variable_form';
+import EnvForm from '@/app/(admin)/admin/env/env_form';
+import { deleteEnv } from '@/app/(admin)/admin/env/actions';
 
 export const columns: ColumnDef<env>[] = [
   {
@@ -33,28 +35,30 @@ export const columns: ColumnDef<env>[] = [
   {
     id: 'actions',
     header: '操作',
-    cell: ({ row }) => (
-      <div className='flex items-center gap-2'>
-        <button
-          onClick={() => console.log('编辑', row.original.id)}
-          className='text-blue-500 hover:text-blue-700'
-        >
-          编辑
-        </button>
-        <button
-          onClick={() => console.log('删除', row.original.id)}
-          className='text-red-500 hover:text-red-700'
-        >
-          删除
-        </button>
-        <button
-          onClick={() => console.log('切换状态', row.original.id)}
-          className='text-gray-500 hover:text-gray-700'
-        >
-          {row.original.is_active ? '停用' : '启用'}
-        </button>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const env: any = {
+        ...row.original,
+        desc: row.original.desc || '',
+        env_variables: (row.original as any).env_variables || [],
+      };
+      return (
+        <div className='flex items-center gap-2'>
+          <EnvForm
+            title='编辑环境'
+            description='编辑环境,可用于自动同步后端'
+            defaultValues={env}
+          >
+            <button className='text-blue-500 hover:text-blue-700'>编辑</button>
+          </EnvForm>
+          <form action={deleteEnv}>
+            <input type='hidden' name='id' value={row.original.id} />
+            <button type='submit' className='text-red-500 hover:text-red-700'>
+              删除
+            </button>
+          </form>
+        </div>
+      );
+    },
   },
 ];
 

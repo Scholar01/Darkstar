@@ -36,19 +36,22 @@ import { env_variable_columns } from '@/app/(admin)/admin/env/columns';
 import { useState, useTransition } from 'react';
 import { FaCirclePlus } from 'react-icons/fa6';
 import EnvVariableForm from '@/app/(admin)/admin/env/env_variable_form';
-import { createEnv } from '@/app/(admin)/admin/env/actions';
+import { createEnv, updateEnv } from '@/app/(admin)/admin/env/actions';
 import { Loader2 } from 'lucide-react';
 import { setFormErrorsFromActionError } from '@/lib/utils';
 const EnvForm: React.FC<{
   children: React.ReactNode;
   title?: string;
   description?: string;
-}> = ({ children, title, description }) => {
+  defaultValues?: z.infer<typeof envSchema>;
+}> = ({ children, title, description, defaultValues }) => {
+  console.log(defaultValues);
+  
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const form = useForm<z.infer<typeof envSchema>>({
     resolver: zodResolver(envSchema),
-    defaultValues: {
+    defaultValues: defaultValues || {
       name: '',
       desc: '',
       platform: 'webui',
@@ -58,8 +61,14 @@ const EnvForm: React.FC<{
   });
 
   const onSubmit = (data: z.infer<typeof envSchema>) => {
+    console.log(data);
     startTransition(async () => {
-      const res = await createEnv(data);
+      let res;
+      if (data.id) {
+        res = await updateEnv(data);
+      } else {
+        res = await createEnv(data);
+      }
       if (res.errors) {
         setFormErrorsFromActionError(form.setError, res.errors);
         return;
@@ -83,6 +92,15 @@ const EnvForm: React.FC<{
             onSubmit={form.handleSubmit(onSubmit)}
             className='mt-4 space-y-4'
           >
+            <FormField
+              control={form.control}
+              name='id'
+              render={({ field }) => (
+                <input type='hidden' {...field} />
+              )}
+            />
+
+
             <FormField
               control={form.control}
               name='name'
@@ -192,7 +210,7 @@ const EnvForm: React.FC<{
                 <FormItem className='flex flex-row items-center gap-2 space-y-0'>
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      defaultChecked={field.value}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>

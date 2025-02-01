@@ -26,6 +26,7 @@ export const env_variableSchema = z
   );
 
 export const envSchema = z.object({
+  id: z.number().optional(),
   name: z.string().min(1, '名称不能为空').max(20, '名称不能超过20个字符'),
   desc: z.string().max(100, '描述不能超过100个字符').optional(),
   platform: z.enum(['webui', 'comfyui'], {
